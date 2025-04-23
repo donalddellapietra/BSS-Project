@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Pencil, Trash2, Check } from "lucide-react";
 
 interface Subtask {
   id: string;
@@ -20,6 +21,8 @@ export default function TaskAnalyzer() {
   const [isLoading, setIsLoading] = useState(false);
   const [subtasks, setSubtasks] = useState<Subtask[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValues, setEditValues] = useState<Subtask | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -60,6 +63,34 @@ export default function TaskAnalyzer() {
     }
   };
 
+  const handleEdit = (subtask: Subtask) => {
+    setEditingId(subtask.id);
+    setEditValues({ ...subtask });
+  };
+
+  const handleSave = (id: string) => {
+    if (editValues) {
+      setSubtasks(subtasks.map(subtask => 
+        subtask.id === id ? editValues : subtask
+      ));
+      setEditingId(null);
+      setEditValues(null);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setSubtasks(subtasks.filter(subtask => subtask.id !== id));
+  };
+
+  const handleDeleteAll = () => {
+    setSubtasks([]);
+  };
+
+  const handleConfirmAll = () => {
+    // Placeholder for confirm all functionality
+    console.log('Confirming all subtasks');
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Card className="mb-6">
@@ -98,7 +129,17 @@ export default function TaskAnalyzer() {
       {subtasks.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Generated Subtasks</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle>Generated Subtasks</CardTitle>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleDeleteAll}>
+                  Delete All
+                </Button>
+                <Button onClick={handleConfirmAll}>
+                  Confirm All
+                </Button>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <Table>
@@ -107,14 +148,71 @@ export default function TaskAnalyzer() {
                   <TableHead>Task Name</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Parent Task</TableHead>
+                  <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {subtasks.map((subtask) => (
                   <TableRow key={subtask.id}>
-                    <TableCell>{subtask.name}</TableCell>
-                    <TableCell>{subtask.date}</TableCell>
-                    <TableCell>{subtask.parent}</TableCell>
+                    <TableCell>
+                      {editingId === subtask.id ? (
+                        <Input
+                          value={editValues?.name || ''}
+                          onChange={(e) => setEditValues(prev => prev ? {...prev, name: e.target.value} : null)}
+                        />
+                      ) : (
+                        subtask.name
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingId === subtask.id ? (
+                        <Input
+                          type="date"
+                          value={editValues?.date || ''}
+                          onChange={(e) => setEditValues(prev => prev ? {...prev, date: e.target.value} : null)}
+                        />
+                      ) : (
+                        subtask.date
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {editingId === subtask.id ? (
+                        <Input
+                          value={editValues?.parent || ''}
+                          onChange={(e) => setEditValues(prev => prev ? {...prev, parent: e.target.value} : null)}
+                        />
+                      ) : (
+                        subtask.parent
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {editingId === subtask.id ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleSave(subtask.id)}
+                          >
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(subtask)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(subtask.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
