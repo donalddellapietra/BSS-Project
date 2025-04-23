@@ -11,7 +11,7 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl
 
 
-    if (pathname.startsWith("/todos") && !session?.data?.user) {
+    if ((pathname.startsWith("/todos") || pathname.startsWith("/task-analyzer")) && !session?.data?.user) {
         return NextResponse.redirect(new URL("/auth/sign-in", request.url))
     }
 

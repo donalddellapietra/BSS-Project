@@ -16,6 +16,9 @@ export async function Header() {
                         <Link href="/todos">
                             <Button variant="ghost">Todos</Button>
                         </Link>
+                        <Link href="/task-analyzer">
+                            <Button variant="ghost">Input</Button>
+                        </Link>
                         <AdminNavEntry />
                     </nav>
                 </div>
