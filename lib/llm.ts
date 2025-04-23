@@ -3,13 +3,9 @@ import OpenAI from 'openai';
 // Get the API key
 const apiKey = process.env.OPENAI_API_KEY;
 
-if (!apiKey) {
-  throw new Error('OPENAI_API_KEY is not set in environment variables');
-}
-
-// Create the OpenAI instance
+// Create the OpenAI instance with optional API key
 const openai = new OpenAI({
-  apiKey: apiKey
+  apiKey: apiKey || '',
 });
 
 function parseSubtasks(text: string): Array<{id: string, name: string, date: string, parent: string}> {
@@ -87,6 +83,10 @@ function parseSubtasks(text: string): Array<{id: string, name: string, date: str
 }
 
 export async function analyzeTask(text: string): Promise<Array<{id: string, name: string, date: string, parent: string}>> {
+  if (!apiKey) {
+    throw new Error('OPENAI_API_KEY is not set in environment variables');
+  }
+  
   try {
     const prompt = `Break down the following task into subtasks with specific dates. You must respond with ONLY a valid JSON array, nothing else. No explanations, no markdown, just the JSON.
 

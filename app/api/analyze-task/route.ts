@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeTask, analyzeFile } from '@/lib/llm';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: 'OpenAI API key is not configured' },
+        { status: 500 }
+      );
+    }
+
     const formData = await request.formData();
     const text = formData.get('text') as string;
     const file = formData.get('file') as File;
