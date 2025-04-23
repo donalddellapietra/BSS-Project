@@ -1,4 +1,4 @@
-import Image from "next/image"
+import Image from "next/image" // josh is in   
 
 export default function Home() {
     return (
