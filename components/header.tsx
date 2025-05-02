@@ -2,7 +2,7 @@ import Link from "next/link"
 import { UserButton } from "@daveyplate/better-auth-ui"
 import { Button } from "./ui/button"
 import { AdminNavEntry } from "./AdminNavEntry"
-import { ListTodo, Sparkles } from "lucide-react"
+import { ListTodo, Sparkles, Calendar } from "lucide-react"
 
 export async function Header() {
     return (
@@ -24,6 +24,12 @@ export async function Header() {
                             <Button variant="ghost" className="hover:text-purple-600 hover:bg-purple-100/50">
                                 <Sparkles className="h-4 w-4 mr-2" />
                                 Analyze
+                            </Button>
+                        </Link>
+                        <Link href="/calendar">
+                            <Button variant="ghost" className="hover:text-purple-600 hover:bg-purple-100/50">
+                                <Calendar className="h-4 w-4 mr-2" />
+                                Calendar
                             </Button>
                         </Link>
                         <AdminNavEntry />
