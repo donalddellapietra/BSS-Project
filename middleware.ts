@@ -2,32 +2,49 @@ import { type NextRequest, NextResponse } from "next/server"
 import { authClient } from "@/lib/auth-client"
 
 export async function middleware(request: NextRequest) {
-    const session = await authClient.getSession({
-        fetchOptions: {
-            headers: request.headers
-        }
-    }) 
+    try {
+        const session = await authClient.getSession({
+            fetchOptions: {
+                headers: request.headers
+            }
+        }) 
 
-    const { pathname } = request.nextUrl
+        const { pathname } = request.nextUrl
 
-    // Handle protected routes
-    if ((pathname.startsWith("/todos") || 
-         pathname.startsWith("/task-analyzer") || 
-         pathname.startsWith("/calendar")) && 
-        !session?.data?.user) {
-        return NextResponse.redirect(new URL("/auth/sign-in", request.url))
-    }
+        // Check if user is authenticated
+        const isAuthenticated = !!session?.data?.user
 
-    if (pathname.startsWith("/admin")) {
-        if (!session?.data?.user || session.data.user.role !== 'admin') {
+        // Handle protected routes
+        if ((pathname.startsWith("/todos") || 
+             pathname.startsWith("/task-analyzer") || 
+             pathname.startsWith("/calendar")) && 
+            !isAuthenticated) {
+            console.log("Redirecting to sign-in: User not authenticated")
             return NextResponse.redirect(new URL("/auth/sign-in", request.url))
         }
-    }
 
-    return NextResponse.next()
+        if (pathname.startsWith("/admin")) {
+            if (!isAuthenticated || session?.data?.user?.role !== 'admin') {
+                console.log("Redirecting to sign-in: User not admin")
+                return NextResponse.redirect(new URL("/auth/sign-in", request.url))
+            }
+        }
+
+        return NextResponse.next()
+    } catch (error) {
+        console.error("Middleware error:", error)
+        // If there's an error checking the session, allow the request to proceed
+        // The page-level auth check will handle it
+        return NextResponse.next()
+    }
 }
 
 export const config = {
     runtime: "nodejs",
-    matcher: ["/todos", "/admin", "/task-analyzer", "/calendar"]
+    matcher: [
+        "/todos/:path*", 
+        "/admin/:path*", 
+        "/task-analyzer/:path*", 
+        "/calendar/:path*"
+    ]
 }
