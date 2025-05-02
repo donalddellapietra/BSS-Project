@@ -5,7 +5,9 @@ import { useActionState, useOptimistic } from "react";
 import { startTransition, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Pencil, Trash2, X, Check } from "lucide-react";
+import { Pencil, Trash2, X, Check, Calendar as CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export function TodoItem({ todo }: { todo: Todo }) {
     const [isEditing, setIsEditing] = useState(false);
@@ -14,6 +16,7 @@ export function TodoItem({ todo }: { todo: Todo }) {
         todo,
         (state, completed: boolean) => ({ ...state, completed })
     );
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const [formState, formAction] = useActionState(toggleTodo, {});
     const [deleteState, deleteAction] = useActionState(deleteTodo, {});
@@ -46,6 +49,22 @@ export function TodoItem({ todo }: { todo: Todo }) {
         });
     }
 
+    function onDateChange(newDate: Date | undefined) {
+        if (!newDate) return;
+        // Set to local midnight in UTC
+        const date = new Date(newDate);
+        const offset = date.getTimezoneOffset();
+        date.setUTCHours(+offset/60, 0, 0, 0);
+
+        startTransition(async () => {
+            const formData = new FormData();
+            formData.set("id", todo.id);
+            formData.set("title", todo.title);
+            formData.set("dueDate", date.toISOString());
+            await updateAction(formData);
+        });
+    }
+
     return (
         <li className="flex items-center gap-2 rounded-lg border px-4 py-2">
             <Checkbox
@@ -72,11 +91,31 @@ export function TodoItem({ todo }: { todo: Todo }) {
                         <span className={optimisticTodo.completed ? "line-through text-muted-foreground" : ""}>
                             {optimisticTodo.title}
                         </span>
-                        {optimisticTodo.dueDate && (
-                            <span className="text-sm text-muted-foreground">
-                                (Due: {new Date(optimisticTodo.dueDate).toLocaleDateString()})
-                            </span>
-                        )}
+                        <div className="flex items-center gap-1">
+                            {optimisticTodo.dueDate && (
+                                <span className="text-sm text-muted-foreground">
+                                    {new Date(optimisticTodo.dueDate).toLocaleDateString()}
+                                </span>
+                            )}
+                            <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                                        <CalendarIcon className="h-4 w-4" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0">
+                                    <Calendar
+                                        mode="single"
+                                        selected={optimisticTodo.dueDate ? new Date(optimisticTodo.dueDate) : undefined}
+                                        onSelect={(date) => {
+                                            onDateChange(date);
+                                            setShowDatePicker(false);
+                                        }}
+                                        initialFocus
+                                    />
+                                </PopoverContent>
+                            </Popover>
+                        </div>
                     </div>
                 )}
             </div>

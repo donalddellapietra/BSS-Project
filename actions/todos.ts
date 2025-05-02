@@ -125,15 +125,14 @@ export async function updateTodo(prevState: TodoFormState, formData: FormData): 
 
     const id = formData.get("id") as string;
     const title = formData.get("title") as string;
-
-    if (!title || title.trim() === '') {
-        return { error: "Title cannot be empty" };
-    }
+    const dueDate = formData.get("dueDate") as string;
 
     try {
-        const result = await db.update(todos)
+        const result = await db
+            .update(todos)
             .set({ 
                 title: title.trim(),
+                dueDate: dueDate ? new Date(dueDate) : null,
                 updatedAt: new Date()
             })
             .where(
@@ -149,6 +148,7 @@ export async function updateTodo(prevState: TodoFormState, formData: FormData): 
         }
 
         revalidatePath('/todos');
+        revalidatePath('/calendar');
         return {};
     } catch (e) {
         return { error: "Failed to update todo" };
