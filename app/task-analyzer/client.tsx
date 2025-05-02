@@ -104,7 +104,7 @@ export const TaskAnalyzer = function TaskAnalyzer({ userId }: Props) {
       startTransition(async () => {
         await createTasks(subtasks, userId);
         setSubtasks([]);
-        router.push("/");
+        router.push("/todos");
       });
     } catch (error) {
       console.error("Error adding tasks:", error);
