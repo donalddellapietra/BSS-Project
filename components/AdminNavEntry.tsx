@@ -2,31 +2,22 @@
 
 import Link from "next/link"
 import { Button } from "./ui/button"
+import { Shield } from "lucide-react"
 import { authClient } from "@/lib/auth-client"
 
 export function AdminNavEntry() {
-    const { 
-        data: session, 
-        isPending,
-        error,
-        refetch
-    } = authClient.useSession()
+    const { data: session, isPending } = authClient.useSession();
 
-    const isAdmin = session?.user?.role === 'admin';
-
-    if (isPending) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div>Error loading session</div>;
+    if (isPending || !session?.user?.role || session.user.role !== 'admin') {
+        return null;
     }
 
     return (
-        isAdmin ? (
-            <Link href="/admin">
-                <Button variant="ghost">Admin</Button>
-            </Link>
-        ) : null
-    )
+        <Link href="/admin">
+            <Button variant="ghost" className="hover:text-purple-600 hover:bg-purple-100/50">
+                <Shield className="h-4 w-4 mr-2" />
+                Admin
+            </Button>
+        </Link>
+    );
 }
