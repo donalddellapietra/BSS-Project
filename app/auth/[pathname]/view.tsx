@@ -16,7 +16,7 @@ export function AuthView({ pathname }: { pathname: string }) {
         setIsSigningOut(true)
         try {
             await authClient.signOut()
-            router.replace("/auth/sign-in")
+            window.location.href = "/";  // Redirect and force reload
         } catch (error) {
             console.error("Failed to sign out:", error)
             setIsSigningOut(false)
@@ -28,6 +28,25 @@ export function AuthView({ pathname }: { pathname: string }) {
             handleSignOut()
         }
     }, [pathname, isSigningOut])
+
+    useEffect(() => {
+        // Force reload after sign-in
+        if (typeof (authClient as any).subscribe === 'function') {
+            const unsubscribe = (authClient as any).subscribe("signIn", () => {
+                window.location.reload();
+            });
+            return () => unsubscribe();
+        }
+        
+        // Alternative approach if subscribe doesn't exist
+        const checkAuthStatus = () => {
+            // Add logic to check if user is signed in
+            // and reload if needed
+        };
+        
+        const interval = setInterval(checkAuthStatus, 1000);
+        return () => clearInterval(interval);
+    }, []);
 
     if (isSigningOut) {
         return (
