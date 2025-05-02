@@ -18,6 +18,21 @@ function AddButton() {
     );
 }
 
+// Helper function to organize todos into a tree structure
+function organizeTodos(todos: Todo[]): Todo[] {
+    const parentTodos = todos.filter(todo => !todo.parentId);
+    const childTodos = todos.filter(todo => todo.parentId);
+    
+    return parentTodos.reduce((acc, parent) => {
+        // Add parent
+        acc.push(parent);
+        // Add children right after their parent
+        const children = childTodos.filter(child => child.parentId === parent.id);
+        acc.push(...children);
+        return acc;
+    }, [] as Todo[]);
+}
+
 export function TodoList({ todos }: { todos: Todo[] }) {
     const formRef = useRef<HTMLFormElement>(null);
     const [optimisticTodos, addOptimisticTodo] = useOptimistic<
@@ -49,6 +64,8 @@ export function TodoList({ todos }: { todos: Todo[] }) {
         await formAction(formData);
     }
 
+    const organizedTodos = organizeTodos(optimisticTodos);
+
     return (
         <div className="space-y-4">
             <form ref={formRef} action={clientAction} className="flex gap-2 items-stretch">
@@ -65,8 +82,10 @@ export function TodoList({ todos }: { todos: Todo[] }) {
             </form>
 
             <ul className="space-y-2">
-                {optimisticTodos.map((todo) => (
-                    <TodoItem key={todo.id} todo={todo} />
+                {organizedTodos.map((todo) => (
+                    <div key={todo.id} className={todo.parentId ? "ml-8" : ""}>
+                        <TodoItem todo={todo} />
+                    </div>
                 ))}
             </ul>
         </div>

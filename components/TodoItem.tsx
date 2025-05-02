@@ -30,9 +30,16 @@ export function TodoItem({ todo }: { todo: Todo }) {
                 checked={optimisticTodo.completed}
                 onCheckedChange={onToggle}
             />
-            <span className={`flex-1 ${optimisticTodo.completed ? "line-through text-muted-foreground" : ""}`}>
-                {optimisticTodo.title}
-            </span>
+            <div className="flex-1">
+                <span className={`${optimisticTodo.completed ? "line-through text-muted-foreground" : ""}`}>
+                    {optimisticTodo.title}
+                </span>
+                {optimisticTodo.dueDate && (
+                    <span className="text-sm text-muted-foreground ml-2">
+                        (Due: {new Date(optimisticTodo.dueDate).toLocaleDateString()})
+                    </span>
+                )}
+            </div>
             {formState.error && (
                 <span className="text-red-500 text-sm">{formState.error}</span>
             )}

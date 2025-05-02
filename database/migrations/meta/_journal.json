@@ -15,6 +15,13 @@
       "when": 1744676220204,
       "tag": "0001_next_doomsday",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1746154169019,
+      "tag": "0002_talented_shaman",
+      "breakpoints": true
     }
   ]
 }
