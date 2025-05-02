@@ -47,7 +47,6 @@ export async function createTodo(prevState: TodoFormState, formData: FormData): 
 }
 
 export async function toggleTodo(prevState: any, formData: FormData) {
-    // Check authentication
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -59,9 +58,11 @@ export async function toggleTodo(prevState: any, formData: FormData) {
     const id = formData.get("id") as string;
 
     try {
-        // Smart query: Update only if todo belongs to current user
         const result = await db.update(todos)
-            .set({ completed: sql`NOT ${todos.completed}` })
+            .set({ 
+                completed: sql`NOT ${todos.completed}`,
+                updatedAt: new Date()
+            })
             .where(
                 and(
                     eq(todos.id, id),
@@ -70,12 +71,13 @@ export async function toggleTodo(prevState: any, formData: FormData) {
             )
             .returning();
 
-        // If no rows were updated, the todo didn't belong to the user
         if (result.length === 0) {
             return { error: "Not authorized to toggle this todo" };
         }
 
         revalidatePath('/todos');
+        revalidatePath('/calendar');
+        revalidatePath('/');  // Also revalidate home page if todos are shown there
         return {};
     } catch (e) {
         return { error: "Failed to toggle todo" };
