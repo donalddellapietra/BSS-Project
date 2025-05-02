@@ -5,6 +5,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Card } from "@/components/ui/card"
 import { Todo } from "@/database/schema"
 import { TodoItem } from "./TodoItem"
+import { organizeTodos } from "./TodoList" // Import the helper function
 
 export function CalendarView({ todos }: { todos: Todo[] }) {
     const [date, setDate] = useState<Date | undefined>(new Date())
@@ -26,21 +27,26 @@ export function CalendarView({ todos }: { todos: Todo[] }) {
     // Get dates with todos for highlighting
     const datesWithTodos = Object.keys(todosByDate).map(dateStr => new Date(dateStr));
 
+    // Organize todos in hierarchy
+    const organizedTodos = organizeTodos(selectedTodos);
+
     return (
-        <div className="grid md:grid-cols-2 gap-6">
-            <Card className="p-4">
-                <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    modifiers={{ hasTodo: datesWithTodos }}
-                    modifiersStyles={{
-                        hasTodo: { backgroundColor: "hsl(var(--primary) / 0.1)" }
-                    }}
-                    className="rounded-md border"
-                />
-            </Card>
-            <Card className="p-4">
+        <div className="space-y-6">
+            <div className="flex justify-center">
+                <Card className="p-6 w-fit">
+                    <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        modifiers={{ hasTodo: datesWithTodos }}
+                        modifiersStyles={{
+                            hasTodo: { backgroundColor: "hsl(var(--primary) / 0.1)" }
+                        }}
+                    />
+                </Card>
+            </div>
+
+            <Card className="p-6">
                 <h2 className="text-xl font-semibold mb-4">
                     {date ? date.toLocaleDateString(undefined, { 
                         weekday: 'long', 
@@ -50,11 +56,18 @@ export function CalendarView({ todos }: { todos: Todo[] }) {
                     }) : "Select a date"}
                 </h2>
                 <div className="space-y-2">
-                    {selectedTodos.length === 0 ? (
+                    {organizedTodos.length === 0 ? (
                         <p className="text-muted-foreground">No todos for this date</p>
                     ) : (
-                        selectedTodos.map(todo => (
-                            <TodoItem key={todo.id} todo={todo} />
+                        organizedTodos.map((todo) => (
+                            <div key={todo.id} className={todo.parentId ? "ml-8" : ""}>
+                                <TodoItem 
+                                    todo={{
+                                        ...todo,
+                                        dueDate: null // Hide the due date display
+                                    }} 
+                                />
+                            </div>
                         ))
                     )}
                 </div>

@@ -18,15 +18,13 @@ function AddButton() {
     );
 }
 
-// Helper function to organize todos into a tree structure
-function organizeTodos(todos: Todo[]): Todo[] {
+// Export the helper function
+export function organizeTodos(todos: Todo[]): Todo[] {
     const parentTodos = todos.filter(todo => !todo.parentId);
     const childTodos = todos.filter(todo => todo.parentId);
     
     return parentTodos.reduce((acc, parent) => {
-        // Add parent
         acc.push(parent);
-        // Add children right after their parent
         const children = childTodos.filter(child => child.parentId === parent.id);
         acc.push(...children);
         return acc;
