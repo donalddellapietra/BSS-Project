@@ -77,7 +77,6 @@ export async function toggleTodo(prevState: any, formData: FormData) {
 
         revalidatePath('/todos');
         revalidatePath('/calendar');
-        revalidatePath('/');  // Also revalidate home page if todos are shown there
         return {};
     } catch (e) {
         return { error: "Failed to toggle todo" };

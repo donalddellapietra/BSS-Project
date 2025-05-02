@@ -9,6 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Pencil, Trash2, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { createTasks } from "./actions";
+import { Calendar } from "@/components/ui/calendar"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { format } from "date-fns"
 
 interface Subtask {
   id: string;
@@ -102,7 +106,17 @@ export const TaskAnalyzer = function TaskAnalyzer({ userId }: Props) {
     setIsLoading(true);
     try {
       startTransition(async () => {
-        await createTasks(subtasks, userId);
+        const latestDate = subtasks.reduce((latest, task) => {
+          const taskDate = new Date(task.date);
+          return taskDate > latest ? taskDate : latest;
+        }, new Date(subtasks[0].date));
+
+        const tasksWithDate = subtasks.map(task => ({
+          ...task,
+          date: task.date
+        }));
+
+        await createTasks(tasksWithDate, userId);
         setSubtasks([]);
         router.push("/todos");
       });
@@ -125,23 +139,25 @@ export const TaskAnalyzer = function TaskAnalyzer({ userId }: Props) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Textarea
-              placeholder="Enter your main task here..."
-              value={textInput}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setTextInput(e.target.value)}
-              className="min-h-[100px]"
-            />
-            <div className="flex items-center space-x-4">
-              <Input
-                type="file"
-                accept=".pdf,.txt,.md,.py,.js,.ts,.java"
-                onChange={handleFileChange}
-                className="w-full"
-              />
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <Textarea
+                  placeholder="Enter your main task here..."
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  className="min-h-[100px]"
+                />
+              </div>
               <Button onClick={handleSubmit} disabled={isLoading}>
                 {isLoading ? 'Analyzing...' : 'Analyze Task'}
               </Button>
             </div>
+            <Input
+              type="file"
+              accept=".pdf,.txt,.md,.py,.js,.ts,.java"
+              onChange={handleFileChange}
+              className="w-full"
+            />
             {error && (
               <p className="text-red-500 text-sm">{error}</p>
             )}
@@ -181,60 +197,53 @@ export const TaskAnalyzer = function TaskAnalyzer({ userId }: Props) {
                       {editingId === subtask.id ? (
                         <Input
                           value={editValues?.name || ''}
-                          onChange={(e) => setEditValues(prev => prev ? {...prev, name: e.target.value} : null)}
+                          onChange={(e) => setEditValues(prev => ({ ...prev!, name: e.target.value }))}
                         />
-                      ) : (
-                        subtask.name
-                      )}
+                      ) : subtask.name}
                     </TableCell>
                     <TableCell>
-                      {editingId === subtask.id ? (
-                        <Input
-                          type="date"
-                          value={editValues?.date || ''}
-                          onChange={(e) => setEditValues(prev => prev ? {...prev, date: e.target.value} : null)}
-                        />
-                      ) : (
-                        subtask.date
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {editingId === subtask.id ? (
-                        <Input
-                          value={editValues?.parent || ''}
-                          onChange={(e) => setEditValues(prev => prev ? {...prev, parent: e.target.value} : null)}
-                        />
-                      ) : (
-                        subtask.parent
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {editingId === subtask.id ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleSave(subtask.id)}
-                          >
-                            <Check className="h-4 w-4" />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="sm" className="flex gap-2">
+                            <CalendarIcon className="h-4 w-4" />
+                            {subtask.date}
                           </Button>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(subtask)}
-                          >
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0">
+                          <Calendar
+                            mode="single"
+                            selected={new Date(subtask.date)}
+                            onSelect={(date) => {
+                              if (date) {
+                                const dateStr = format(date, 'yyyy-MM-dd');
+                                setSubtasks(subtasks.map(st => 
+                                  st.id === subtask.id 
+                                    ? { ...st, date: dateStr }
+                                    : st
+                                ));
+                              }
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </TableCell>
+                    <TableCell>{subtask.parent}</TableCell>
+                    <TableCell>
+                      {editingId === subtask.id ? (
+                        <Button size="icon" onClick={() => handleSave(subtask.id)}>
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button size="icon" variant="outline" onClick={() => handleEdit(subtask)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(subtask.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                          <Button size="icon" variant="outline" onClick={() => handleDelete(subtask.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
