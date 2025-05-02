@@ -10,8 +10,11 @@ export async function middleware(request: NextRequest) {
 
     const { pathname } = request.nextUrl
 
-
-    if ((pathname.startsWith("/todos") || pathname.startsWith("/task-analyzer")) && !session?.data?.user) {
+    // Handle protected routes
+    if ((pathname.startsWith("/todos") || 
+         pathname.startsWith("/task-analyzer") || 
+         pathname.startsWith("/calendar")) && 
+        !session?.data?.user) {
         return NextResponse.redirect(new URL("/auth/sign-in", request.url))
     }
 

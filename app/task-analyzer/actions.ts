@@ -4,6 +4,14 @@ import { db } from "@/database/db";
 import { todos } from "@/database/schema";
 
 export async function createTasks(tasks: Array<{ name: string, date: string, parent: string }>, userId: string) {
+  // Helper to set date to local midnight in UTC
+  const setDateForLocalMidnight = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const offset = date.getTimezoneOffset();
+    date.setUTCHours(+offset/60, 0, 0, 0);  // Convert minutes to hours
+    return date;
+  };
+
   // Find the latest date among all subtasks
   const latestDate = tasks.reduce((latest, task) => {
     const taskDate = new Date(task.date);
@@ -15,7 +23,7 @@ export async function createTasks(tasks: Array<{ name: string, date: string, par
     title: tasks[0].parent,
     userId: userId,
     completed: false,
-    dueDate: latestDate  // Use the latest date for parent task
+    dueDate: setDateForLocalMidnight(latestDate.toISOString().split('T')[0])
   }).returning();
 
   // Then create all child tasks with their individual dates
@@ -25,7 +33,7 @@ export async function createTasks(tasks: Array<{ name: string, date: string, par
       userId: userId,
       completed: false,
       parentId: parentTask.id,
-      dueDate: new Date(task.date)  // Keep individual dates for subtasks
+      dueDate: setDateForLocalMidnight(task.date)
     }))
   );
 } 
