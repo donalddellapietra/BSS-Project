@@ -7,6 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Pencil, Trash2, Check } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { createTodo } from "@/actions/todos";
+import { useActionState } from "react";
+import { useOptimistic } from "react";
+import { startTransition } from "react";
+import { db } from "@/database/db";
+import { todos } from "@/database/schema";
 
 interface Subtask {
   id: string;
@@ -23,6 +30,8 @@ export default function TaskAnalyzer() {
   const [error, setError] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Subtask | null>(null);
+  const router = useRouter();
+  const [formState, formAction] = useActionState(createTodo, {});
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -86,9 +95,31 @@ export default function TaskAnalyzer() {
     setSubtasks([]);
   };
 
-  const handleConfirmAll = () => {
-    // Placeholder for confirm all functionality
-    console.log('Confirming all subtasks');
+  const handleConfirmAll = async () => {
+    if (subtasks.length === 0) {
+      setError("No subtasks to confirm");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      startTransition(async () => {
+        // Create all subtasks in one transition
+        await Promise.all(subtasks.map(async (subtask) => {
+          const formData = new FormData();
+          formData.set("title", `${subtask.name} (Due: ${subtask.date})`);
+          await formAction(formData);
+        }));
+        
+        setSubtasks([]);
+        router.push("/");
+      });
+    } catch (error) {
+      console.error("Error adding tasks:", error);
+      setError("Failed to add tasks to your todo list");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
