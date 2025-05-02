@@ -30,22 +30,14 @@ export function AuthView({ pathname }: { pathname: string }) {
     }, [pathname, isSigningOut])
 
     useEffect(() => {
-        // Force reload after sign-in
-        if (typeof (authClient as any).subscribe === 'function') {
-            const unsubscribe = (authClient as any).subscribe("signIn", () => {
-                window.location.reload();
-            });
-            return () => unsubscribe();
-        }
+        // For sign-out, we already have the handleSignOut function
+        // which handles the page reload after sign-out
         
-        // Alternative approach if subscribe doesn't exist
-        const checkAuthStatus = () => {
-            // Add logic to check if user is signed in
-            // and reload if needed
-        };
+        // No need for additional logic here since the auth flow
+        // will naturally redirect or reload the page after completion
         
-        const interval = setInterval(checkAuthStatus, 1000);
-        return () => clearInterval(interval);
+        // If you need to force a reload in specific cases,
+        // you can add that logic here
     }, []);
 
     if (isSigningOut) {
