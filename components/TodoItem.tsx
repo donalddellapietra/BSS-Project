@@ -44,11 +44,6 @@ export function TodoItem({ todo }: { todo: Todo }) {
             const formData = new FormData();
             formData.set("id", todo.id);
             formData.set("title", editValue);
-            
-            if (todo.dueDate) {
-            formData.set("dueDate", new Date(todo.dueDate).toISOString());
-            }
-            
             await updateAction(formData);
             setIsEditing(false);
         });
