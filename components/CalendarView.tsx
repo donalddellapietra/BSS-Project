@@ -39,8 +39,9 @@ export function CalendarView({ todos }: { todos: Todo[] }) {
                         selected={date}
                         onSelect={setDate}
                         modifiers={{ hasTodo: datesWithTodos }}
-                        modifiersStyles={{
-                            hasTodo: { backgroundColor: "hsl(var(--primary) / 0.1)" }
+                        modifiersClassNames={{
+                            hasTodo:
+                              "after:content-[''] after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:bg-purple-500 after:rounded-full"
                         }}
                     />
                 </Card>
