@@ -154,3 +154,18 @@ export async function updateTodo(prevState: TodoFormState, formData: FormData): 
         return { error: "Failed to update todo" };
     }
 }
+
+// Special version for admin page form action
+export async function adminDeleteTodo(formData: FormData) {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    });
+
+    if (!session?.user?.role || session.user.role !== 'admin') {
+        throw new Error("Not authorized");
+    }
+
+    const id = formData.get("id") as string;
+    await db.delete(todos).where(eq(todos.id, id));
+    revalidatePath("/admin");
+}

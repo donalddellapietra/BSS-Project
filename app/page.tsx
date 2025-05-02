@@ -1,59 +1,50 @@
-import Image from "next/image" 
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ArrowRight, ListTodo, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
     return (
-        <div className="grid grow grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20">
-            <main className="row-start-2 flex flex-col items-center gap-8 sm:items-start">
-                <Image
-                    className="dark:invert"
-                    src="/next.svg"
-                    alt="Next.js logo"
-                    width={180}
-                    height={38}
-                    priority
-                />
-                <ol className="list-inside list-decimal text-center font-[family-name:var(--font-geist-mono)] text-sm sm:text-left">
-                    <li className="mb-2">
-                        Get started by editing{" "}
-                        <code className="rounded bg-black/[.05] px-1 py-0.5 font-semibold dark:bg-white/[.06]">
-                            src/app/page.tsx
-                        </code>
-                        .
-                    </li>
-                    <li>Save and see your changes instantly.</li>
-                </ol>
+        <main className="py-8 px-4">
+            <section className="container mx-auto max-w-4xl text-center">
+                <h1 className="text-4xl font-bold mb-4">Subtask Analyzer</h1>
+                <p className="text-xl text-muted-foreground mb-8">
+                    Transform your complex tasks into manageable subtasks with AI
+                </p>
 
+                <div className="grid md:grid-cols-2 gap-6 mb-8">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center justify-center gap-2">
+                                <Sparkles className="h-5 w-5" />
+                                Smart Analysis
+                            </CardTitle>
+                            <CardDescription>
+                                Upload a task or paste text to automatically generate subtasks
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
 
-            </main>
-            <footer className="row-start-3 flex flex-wrap items-center justify-center gap-6">
-                <a
-                    className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-                    href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <Image aria-hidden src="/file.svg" alt="File icon" width={16} height={16} />
-                    Learn
-                </a>
-                <a
-                    className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-                    href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-                    Examples
-                </a>
-                <a
-                    className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-                    href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-                    Go to nextjs.org →
-                </a>
-            </footer>
-        </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center justify-center gap-2">
+                                <ListTodo className="h-5 w-5" />
+                                Task Management
+                            </CardTitle>
+                            <CardDescription>
+                                Organize and track your tasks with due dates and completion status
+                            </CardDescription>
+                        </CardHeader>
+                    </Card>
+                </div>
+
+                <Link href="/task-analyzer">
+                    <Button size="lg" className="gap-2">
+                        Get Started
+                        <ArrowRight className="h-4 w-4" />
+                    </Button>
+                </Link>
+            </section>
+        </main>
     )
 }

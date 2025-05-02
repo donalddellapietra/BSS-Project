@@ -4,7 +4,7 @@ import { db } from "@/database/db"
 import { todos } from "@/database/schema"
 
 import { Button } from "@/components/ui/button"
-import { deleteTodo } from "@/actions/todos"
+import { deleteTodo, adminDeleteTodo } from "@/actions/todos"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 
@@ -55,7 +55,7 @@ export default async function AdminPage() {
                                     <td className="py-2 px-4">{todo.user.name}</td>
                                     <td className="py-2 px-4">{todo.title}</td>
                                     <td className="py-2 px-4 text-center">
-                                        <form action={deleteTodo}>
+                                        <form action={adminDeleteTodo}>
                                             <input type="hidden" name="id" value={todo.id} />
                                             <Button
                                                 variant="destructive"
