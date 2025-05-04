@@ -62,12 +62,7 @@ export function CalendarView({ todos }: { todos: Todo[] }) {
                     ) : (
                         organizedTodos.map((todo) => (
                             <div key={todo.id} className={todo.parentId ? "ml-8" : ""}>
-                                <TodoItem 
-                                    todo={{
-                                        ...todo,
-                                        dueDate: null // Hide the due date display
-                                    }} 
-                                />
+                                <TodoItem todo={todo} />
                             </div>
                         ))
                     )}
