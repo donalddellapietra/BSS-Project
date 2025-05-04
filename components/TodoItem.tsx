@@ -141,9 +141,9 @@ export function TodoItem({ todo }: { todo: Todo }) {
             <div className="flex items-center gap-1">
               {optimisticTodo.dueDate && (
                 <span className={cn(
-                    "text-sm px-2 py-0.5 rounded-md",
+                    "text-sm px-1 rounded",
                     isOverdue(optimisticTodo)
-                      ? "bg-red-500 text-white"
+                      ? "bg-red-100 text-red-700"
                       : "text-muted-foreground"
                   )}>
                     {new Date(optimisticTodo.dueDate).toLocaleDateString()}
