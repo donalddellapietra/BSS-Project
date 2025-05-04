@@ -5,46 +5,52 @@ import { Calendar } from "@/components/ui/calendar"
 import { Card } from "@/components/ui/card"
 import { Todo } from "@/database/schema"
 import { TodoItem } from "./TodoItem"
-import { organizeTodos } from "./TodoList" // Import the helper function
+import { organizeTodos } from "./TodoList"
 
-function getTodosForDate(date: Date | undefined, todos: Todo[]): Todo[] {
+function getTodosWithParentsForDate(date: Date | undefined, todos: Todo[]): Todo[] {
     if (!date) return [];
+
     const target = new Date(date);
     target.setHours(0, 0, 0, 0);
 
-    return todos.filter(todo => {
+    // Todos that match the selected date
+    const selected = todos.filter(todo => {
         if (!todo.dueDate) return false;
         const due = new Date(todo.dueDate);
         due.setHours(0, 0, 0, 0);
         return due.getTime() === target.getTime();
     });
+
+    const selectedIds = new Set(selected.map(t => t.id));
+
+    // Find parents that are not already in the selected list
+    const missingParentIds = new Set(
+        selected
+            .filter(t => t.parentId && !selectedIds.has(t.parentId))
+            .map(t => t.parentId!)
+    );
+
+    const parentsToAdd = todos.filter(t => missingParentIds.has(t.id));
+
+    return [...selected, ...parentsToAdd];
 }
 
 export function CalendarView({ todos }: { todos: Todo[] }) {
-    const [date, setDate] = useState<Date | undefined>(new Date())
+    const [date, setDate] = useState<Date | undefined>(new Date());
 
-    // Group todos by date
+    // Group todos by date to highlight dates on the calendar
     const todosByDate = todos.reduce((acc, todo) => {
         if (!todo.dueDate) return acc;
         const dateStr = new Date(todo.dueDate).toDateString();
-        if (!acc[dateStr]) {
-            acc[dateStr] = [];
-        }
+        if (!acc[dateStr]) acc[dateStr] = [];
         acc[dateStr].push(todo);
         return acc;
     }, {} as Record<string, Todo[]>);
 
-    // Get todos for selected date
-    //const selectedTodos = date ? todosByDate[date.toDateString()] || [] : [];
-
-    // Get dates with todos for highlighting
     const datesWithTodos = Object.keys(todosByDate).map(dateStr => new Date(dateStr));
 
-    // Organize todos in hierarchy
-    //const organizedTodos = organizeTodos(selectedTodos);
-
-    //new way to select todos (include the subtasks)
-    const selectedTodos = getTodosForDate(date, todos);
+    // Get todos with parents included
+    const selectedTodos = getTodosWithParentsForDate(date, todos);
     const organizedTodos = organizeTodos(selectedTodos);
 
     return (
@@ -87,4 +93,4 @@ export function CalendarView({ todos }: { todos: Todo[] }) {
             </Card>
         </div>
     );
-} 
+}
