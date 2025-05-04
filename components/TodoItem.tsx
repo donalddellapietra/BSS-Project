@@ -141,11 +141,13 @@ export function TodoItem({ todo }: { todo: Todo }) {
             <div className="flex items-center gap-1">
               {optimisticTodo.dueDate && (
                 <span className={cn(
-                    "text-sm",
-                    isOverdue(optimisticTodo) ? "text-red-500 font-semibold" : "text-muted-foreground"
+                    "text-sm px-2 py-0.5 rounded-md",
+                    isOverdue(optimisticTodo)
+                      ? "bg-red-500 text-white"
+                      : "text-muted-foreground"
                   )}>
                     {new Date(optimisticTodo.dueDate).toLocaleDateString()}
-                  </span>                  
+                  </span>                 
               )}
               <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
                 <PopoverTrigger asChild>
