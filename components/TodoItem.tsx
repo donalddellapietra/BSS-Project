@@ -16,7 +16,25 @@ function isOverdue(todo: Todo) {
     today.setHours(0, 0, 0, 0);  
     return new Date(todo.dueDate) < today;
 }
+function isToday(todo: Todo) {
+    if (!todo.dueDate) return false; 
+    const due = new Date(todo.dueDate);
+    const today = new Date();
+    due.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    return due.getTime() === today.getTime();
+}
   
+function isTomorrow(todo: Todo) {
+    if (!todo.dueDate) return false;
+    const due = new Date(todo.dueDate);
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    due.setHours(0, 0, 0, 0);
+    tomorrow.setHours(0, 0, 0, 0);
+    return due.getTime() === tomorrow.getTime();
+}
+   
 export function TodoItem({ todo }: { todo: Todo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.title);
@@ -140,12 +158,34 @@ export function TodoItem({ todo }: { todo: Todo }) {
             </span>
             <div className="flex items-center gap-1">
               {optimisticTodo.dueDate && (
-                <span className={cn(
-                    "text-sm",
-                    isOverdue(optimisticTodo) ? "text-red-300 font-medium" : "text-muted-foreground"
-                  )}>
-                    {new Date(optimisticTodo.dueDate).toLocaleDateString()}
-                  </span>                                 
+                
+                //overdue style & today, tomorrow, yesterday style design
+                <span
+                    className="text-sm font-medium"
+                    style={{
+                        color:
+                        isOverdue(optimisticTodo) ? "#b3261e" :
+                        isToday(optimisticTodo) || isTomorrow(optimisticTodo) ? "#2e7d32" :
+                        undefined
+                    }}
+                    >
+                    {(() => {
+                        const due = new Date(optimisticTodo.dueDate);
+                        const today = new Date();
+                        const oneDay = 24 * 60 * 60 * 1000;
+
+                        due.setHours(0, 0, 0, 0);
+                        today.setHours(0, 0, 0, 0);
+
+                        const diff = due.getTime() - today.getTime();
+
+                        if (diff === -oneDay) return "Yesterday";
+                        if (diff === 0) return "Today";
+                        if (diff === oneDay) return "Tomorrow";
+                        return due.toLocaleDateString();
+                    })()}
+                </span>
+
               )}
               <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
                 <PopoverTrigger asChild>
