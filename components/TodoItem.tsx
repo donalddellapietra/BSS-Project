@@ -161,13 +161,14 @@ export function TodoItem({ todo }: { todo: Todo }) {
                 
                 //overdue style & today, tomorrow, yesterday style design
                 <span
-                    className="text-sm font-medium"
-                    style={{
-                        color:
-                        isOverdue(optimisticTodo) ? "#b3261e" :
-                        isToday(optimisticTodo) || isTomorrow(optimisticTodo) ? "#2e7d32" :
-                        undefined
-                    }}
+                    className={cn(
+                        "text-sm font-medium",
+                        isOverdue(optimisticTodo)
+                        ? "text-[#b3261e]"
+                        : isToday(optimisticTodo) || isTomorrow(optimisticTodo)
+                        ? "text-[#2e7d32]"
+                        : "text-muted-foreground"
+                    )}
                     >
                     {(() => {
                         const due = new Date(optimisticTodo.dueDate);
