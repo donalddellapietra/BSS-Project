@@ -8,7 +8,15 @@ import { Input } from "./ui/input";
 import { Pencil, Trash2, X, Check, Calendar as CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
+function isOverdue(todo: Todo) {
+    if (!todo.dueDate || todo.completed) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);  
+    return new Date(todo.dueDate) < today;
+}
+  
 export function TodoItem({ todo }: { todo: Todo }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.title);
@@ -132,9 +140,12 @@ export function TodoItem({ todo }: { todo: Todo }) {
             </span>
             <div className="flex items-center gap-1">
               {optimisticTodo.dueDate && (
-                <span className="text-sm text-muted-foreground">
-                  {new Date(optimisticTodo.dueDate).toLocaleDateString()}
-                </span>
+                <span className={cn(
+                    "text-sm",
+                    isOverdue(optimisticTodo) ? "text-red-500 font-semibold" : "text-muted-foreground"
+                  )}>
+                    {new Date(optimisticTodo.dueDate).toLocaleDateString()}
+                  </span>                  
               )}
               <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
                 <PopoverTrigger asChild>
