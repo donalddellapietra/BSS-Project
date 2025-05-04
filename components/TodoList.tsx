@@ -18,43 +18,47 @@ function AddButton() {
     );
 }
 
-// Export the helper function
+// Export the helper function 
 export function organizeTodos(todos: Todo[]): Todo[] {
-    // First separate parents and children
+   //parent & child
     const parentTodos = todos.filter(todo => !todo.parentId);
     const childTodos = todos.filter(todo => todo.parentId);
-
-    // Helper function to sort by completion and date
+   
     const sortByCompletionAndDate = (a: Todo, b: Todo) => {
-        // Completed tasks always go last
-        if (a.completed !== b.completed) {
-            return a.completed ? 1 : -1;
-        }
-        
-        // Within completion status, sort by date
-        const aDate = a.dueDate ? new Date(a.dueDate) : new Date(8640000000000000);
-        const bDate = b.dueDate ? new Date(b.dueDate) : new Date(8640000000000000);
-        const dateCompare = aDate.getTime() - bDate.getTime();
-        if (dateCompare !== 0) return dateCompare;
-
-        // If same date, sort by creation date
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+  
+      const aDate = a.dueDate ? new Date(a.dueDate) : new Date(8640000000000000); // max date
+      const bDate = b.dueDate ? new Date(b.dueDate) : new Date(8640000000000000);
+  
+      const dateCompare = aDate.getTime() - bDate.getTime();
+      if (dateCompare !== 0) return dateCompare;
+  
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     };
-
-    // Sort parents
+   
+    const result: Todo[] = [];
+   
     const sortedParents = parentTodos.sort(sortByCompletionAndDate);
-
-    // Build final array with sorted parents and their sorted children
-    return sortedParents.reduce((acc, parent) => {
-        acc.push(parent);
-        // Get and sort children for this parent
-        const children = childTodos
-            .filter(child => child.parentId === parent.id)
-            .sort(sortByCompletionAndDate);  // Use same sorting for children
-        acc.push(...children);
-        return acc;
-    }, [] as Todo[]);
-}
+    result.push(...sortedParents);
+   
+    for (const parent of sortedParents) {
+      const children = childTodos
+        .filter(child => child.parentId === parent.id)
+        .sort(sortByCompletionAndDate);
+      result.push(...children);
+    }
+   
+    const orphanChildren = childTodos.filter(
+      child => !todos.find(t => t.id === child.parentId)
+    );
+    const sortedOrphans = orphanChildren.sort(sortByCompletionAndDate);
+    result.push(...sortedOrphans);
+  
+    return result;
+  }
+  
 
 export function TodoList({ todos }: { todos: Todo[] }) {
     const formRef = useRef<HTMLFormElement>(null);
