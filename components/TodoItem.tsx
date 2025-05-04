@@ -142,7 +142,7 @@ export function TodoItem({ todo }: { todo: Todo }) {
               {optimisticTodo.dueDate && (
                 <span className={cn(
                     "text-sm",
-                    isOverdue(optimisticTodo) ? "text-red-400 font-medium" : "text-muted-foreground"
+                    isOverdue(optimisticTodo) ? "text-red-300 font-medium" : "text-muted-foreground"
                   )}>
                     {new Date(optimisticTodo.dueDate).toLocaleDateString()}
                   </span>                                 
