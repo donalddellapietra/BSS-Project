@@ -20,40 +20,41 @@ function AddButton() {
 
 // Export the helper function
 export function organizeTodos(todos: Todo[]): Todo[] {
-    // First separate parents and children
     const parentTodos = todos.filter(todo => !todo.parentId);
     const childTodos = todos.filter(todo => todo.parentId);
 
-    // Helper function to sort by completion and date
     const sortByCompletionAndDate = (a: Todo, b: Todo) => {
-        // Completed tasks always go last
-        if (a.completed !== b.completed) {
-            return a.completed ? 1 : -1;
-        }
-        
-        // Within completion status, sort by date
+        if (a.completed !== b.completed) return a.completed ? 1 : -1;
         const aDate = a.dueDate ? new Date(a.dueDate) : new Date(8640000000000000);
         const bDate = b.dueDate ? new Date(b.dueDate) : new Date(8640000000000000);
         const dateCompare = aDate.getTime() - bDate.getTime();
         if (dateCompare !== 0) return dateCompare;
-
-        // If same date, sort by creation date
         return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     };
 
-    // Sort parents
     const sortedParents = parentTodos.sort(sortByCompletionAndDate);
 
-    // Build final array with sorted parents and their sorted children
-    return sortedParents.reduce((acc, parent) => {
+    // Track added child ids
+    const addedChildIds = new Set<string>();
+
+    const organized = sortedParents.reduce((acc, parent) => {
         acc.push(parent);
-        // Get and sort children for this parent
         const children = childTodos
             .filter(child => child.parentId === parent.id)
-            .sort(sortByCompletionAndDate);  // Use same sorting for children
+            .sort(sortByCompletionAndDate);
+        children.forEach(child => addedChildIds.add(child.id));
         acc.push(...children);
         return acc;
     }, [] as Todo[]);
+
+    // Add orphaned children (whose parent is not in selectedTodos)
+    const orphanChildren = childTodos
+        .filter(child => !addedChildIds.has(child.id))
+        .sort(sortByCompletionAndDate);
+
+    organized.push(...orphanChildren);
+
+    return organized;
 }
 
 export function TodoList({ todos }: { todos: Todo[] }) {
