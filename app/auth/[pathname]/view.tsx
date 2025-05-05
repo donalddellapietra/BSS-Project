@@ -14,8 +14,8 @@ export function AuthView({ pathname }: { pathname: string }) {
     const { data: session } = authClient.useSession()
 
     useEffect(() => {
-        // If we're on the sign-in or sign-up page and have a session, force reload
-        if ((pathname === "sign-in" || pathname === "sign-up") && session?.user) {
+        // If we're on the sign-in page and have a session, force reload
+        if (pathname === "sign-in" && session?.user) {
             window.location.href = "/todos";
         }
     }, [session, pathname]);
