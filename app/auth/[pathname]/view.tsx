@@ -13,13 +13,6 @@ export function AuthView({ pathname }: { pathname: string }) {
     const [isSigningOut, setIsSigningOut] = useState(false)
     const { data: session } = authClient.useSession()
 
-    useEffect(() => {
-        // If we're on the sign-in or sign-up page and have a session, force reload
-        if ((pathname === "sign-in" || pathname === "sign-up") && session?.user) {
-            window.location.href = "/todos";
-        }
-    }, [session, pathname]);
-
     const handleSignOut = async () => {
         setIsSigningOut(true)
         try {
