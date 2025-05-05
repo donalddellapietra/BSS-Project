@@ -23,6 +23,13 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL("/auth/sign-in", request.url))
         }
 
+        if ((pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up")) && isAuthenticated) {
+            console.log("Redirecting to todos: User already authenticated")
+            return NextResponse.redirect(new URL("/todos", request.url))
+        }
+
+
+
         if (pathname.startsWith("/admin")) {
             if (!isAuthenticated || session?.data?.user?.role !== 'admin') {
                 console.log("Redirecting to sign-in: User not admin")
