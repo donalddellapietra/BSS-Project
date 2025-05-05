@@ -1,60 +1,45 @@
 import { type NextRequest, NextResponse } from "next/server"
 
+// Define routes that require admin privileges
+const PROTECTED_ADMIN_PATHS = ["/admin"]
+
 export async function middleware(request: NextRequest) {
     try {
         const { pathname } = request.nextUrl
 
-        // Skip over API routes and static files
-        if (pathname.startsWith("/api") || pathname.startsWith("/static") || pathname.startsWith("/public")) {
-            return NextResponse.next();
-        }
-
-        // Check auth cookie
-        const authCookie = request.cookies.get('auth_session')
-        const isAuthenticated = !!authCookie?.value
-
-        // Get user role from a separate cookie if needed
-        const roleCookie = request.cookies.get('user_role')
-        const isAdmin = roleCookie?.value === 'admin'
-
-        // Handle auth routes (sign-in, sign-up)
-        if (pathname.startsWith("/auth/")) {
-            if (isAuthenticated) {
-                return NextResponse.redirect(new URL("/", request.url))
-            }
+        // Bypass middleware for system routes and static assets
+        if (
+            pathname.startsWith("/api") ||
+            pathname.startsWith("/_next") ||
+            pathname.includes(".")
+        ) {
             return NextResponse.next()
         }
 
-        // Only check authentication for protected routes
-        if (pathname.startsWith("/todos") || 
-            pathname.startsWith("/admin") || 
-            pathname.startsWith("/task-analyzer") || 
-            pathname.startsWith("/calendar")) {
+        // For admin-protected routes, verify session cookie existence
+        // Note: Detailed authentication happens at the page level
+        if (PROTECTED_ADMIN_PATHS.some(path => pathname.startsWith(path))) {
+            const cookies = request.headers.get("cookie") || ""
             
-            if (!isAuthenticated) {
-                return NextResponse.redirect(new URL("/auth/sign-in", request.url))
-            }
-
-            // Handle admin routes separately
-            if (pathname.startsWith("/admin") && !isAdmin) {
-                return NextResponse.redirect(new URL("/", request.url))
+            // Redirect to login if no session cookie found
+            if (!cookies.includes("session-token=")) {
+                const redirectUrl = new URL("/auth/sign-in", request.url)
+                redirectUrl.searchParams.set("callbackUrl", pathname)
+                return NextResponse.redirect(redirectUrl)
             }
         }
 
         return NextResponse.next()
     } catch (error) {
         console.error("Middleware error:", error)
-        return NextResponse.redirect(new URL("/auth/sign-in", request.url))
+        const redirectUrl = new URL("/auth/sign-in", request.url)
+        return NextResponse.redirect(redirectUrl)
     }
 }
 
 export const config = {
-    runtime: "nodejs",
     matcher: [
-        "/todos/:path*", 
-        "/admin/:path*", 
-        "/task-analyzer/:path*", 
-        "/calendar/:path*",
-        "/auth/:path*"
-    ]
+        // Middleware only processes admin routes
+        "/admin/:path*"
+    ],
 }
