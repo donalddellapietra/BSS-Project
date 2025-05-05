@@ -14,19 +14,31 @@ export async function middleware(request: NextRequest) {
         // Check if user is authenticated
         const isAuthenticated = !!session?.data?.user
 
-        // Handle protected routes
-        if ((pathname.startsWith("/todos") || 
-             pathname.startsWith("/task-analyzer") || 
-             pathname.startsWith("/calendar")) && 
-            !isAuthenticated) {
-            console.log("Redirecting to sign-in: User not authenticated")
-            return NextResponse.redirect(new URL("/auth/sign-in", request.url))
+        // // Handle protected routes
+        // if ((pathname.startsWith("/todos") || 
+        //      pathname.startsWith("/task-analyzer") || 
+        //      pathname.startsWith("/calendar")) && 
+        //     !isAuthenticated) {
+        //     console.log("Redirecting to sign-in: User not authenticated")
+        //     return NextResponse.redirect(new URL("/auth/sign-in", request.url))
+        // }
+        // Skip over API routes and static files
+        if (pathname.startsWith("/api") || pathname.startsWith("/static") || pathname.startsWith("/public")) {
+            return NextResponse.next();
         }
 
-        if ((pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up")) && isAuthenticated) {
-            console.log("Redirecting to todos: User already authenticated")
-            return NextResponse.redirect(new URL("/todos", request.url))
+        
+
+        const sessionToken = request.cookies.get('session-token');
+        if (!sessionToken) {
+            console.log("Redirecting to sign-in: Session token not found")
+            return NextResponse.redirect(new URL("/auth/sign-in", request.url));
         }
+
+        // if ((pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up")) && isAuthenticated) {
+        //     console.log("Redirecting to todos: User already authenticated")
+        //     return NextResponse.redirect(new URL("/todos", request.url))
+        // }
 
 
 
