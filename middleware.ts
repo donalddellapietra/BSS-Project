@@ -1,5 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { authClient } from "@/lib/auth-client"
 
 export async function middleware(request: NextRequest) {
     try {
@@ -10,30 +9,34 @@ export async function middleware(request: NextRequest) {
             return NextResponse.next();
         }
 
-        const session = await authClient.getSession({
-            fetchOptions: {
-                headers: request.headers
-            }
-        }) 
+        // Check auth cookie
+        const authCookie = request.cookies.get('auth_session')
+        const isAuthenticated = !!authCookie?.value
 
-        const isAuthenticated = !!session?.data?.user
+        // Get user role from a separate cookie if needed
+        const roleCookie = request.cookies.get('user_role')
+        const isAdmin = roleCookie?.value === 'admin'
 
         // Handle auth routes (sign-in, sign-up)
-        if ((pathname.startsWith("/auth/sign-in") || pathname.startsWith("/auth/sign-up"))) {
+        if (pathname.startsWith("/auth/")) {
             if (isAuthenticated) {
-                return NextResponse.redirect(new URL("/todos", request.url))
+                return NextResponse.redirect(new URL("/", request.url))
             }
             return NextResponse.next()
         }
 
-        // Handle protected routes
-        if (!isAuthenticated) {
-            return NextResponse.redirect(new URL("/auth/sign-in", request.url))
-        }
+        // Only check authentication for protected routes
+        if (pathname.startsWith("/todos") || 
+            pathname.startsWith("/admin") || 
+            pathname.startsWith("/task-analyzer") || 
+            pathname.startsWith("/calendar")) {
+            
+            if (!isAuthenticated) {
+                return NextResponse.redirect(new URL("/auth/sign-in", request.url))
+            }
 
-        // Handle admin routes
-        if (pathname.startsWith("/admin")) {
-            if (session?.data?.user?.role !== 'admin') {
+            // Handle admin routes separately
+            if (pathname.startsWith("/admin") && !isAdmin) {
                 return NextResponse.redirect(new URL("/", request.url))
             }
         }
@@ -52,6 +55,6 @@ export const config = {
         "/admin/:path*", 
         "/task-analyzer/:path*", 
         "/calendar/:path*",
-        "/auth/:path*"  // Add auth routes to matcher
+        "/auth/:path*"
     ]
 }
